@@ -1,31 +1,23 @@
 # LLM Learn｜大模型开发系统课程
 
-本仓库是大模型系统学习的唯一主仓库，统一维护课程 Markdown 讲义、可运行代码、测试与真实运行结果。
+本仓库是**唯一课程主仓库**。学习路径覆盖工程开发、数学、PyTorch、Transformer、Mini-GPT、RAG、Agent、微调与部署，按 72 个独立课次组织。每日 1–2 小时，预计 24 周以上（因实践难度调整）。
 
-当前章节：第 11–16 课——Git/GitHub、HTTP/JSON/API、OpenAI Responses API 多轮聊天。
+## 从这里开始
+- **[完整 72 课课程表（每课目标/实践/验收）](COURSE_PLAN.md)**
+- **[课程硬性规范：目录、双讲义、逐行注释、LaTeX、CI](COURSE_STANDARDS.md)**
+- **[课程目录](lessons/)**：`lesson11` 到 `lesson16` 已建立；此前 1–10 课已学习，未伪造历史实验与讲义。
+- **[GitHub Actions 运行历史](../../actions)**
 
-## 导航
-- [学习路线](docs/ROADMAP.md)
-- [第 11–12 课：Git、GitHub 与代码管理](docs/11-12-git-github.md)
-- [第 13–14 课：HTTP、JSON 与 API](docs/13-14-http-api.md)
-- [第 15–16 课：LLM API 与多轮聊天](docs/15-16-llm-api.md)
-- [实战项目代码](projects/first-llm-app/)
-- [验证记录](results/2026-11-06-lessons-11-16.md)
-- [课程维护规范](docs/CONTRIBUTING_COURSE.md)
+## 每课文件
+`lessons/lessonN/README.md`、`lecture.md`、`lecture.tex`、`code/`、`tests/`、`results/verification.md`，成功编译后发布 `lecture.pdf`。
 
-## 快速开始
-```powershell
-git clone https://github.com/ChanJeunlam/llm-learn.git
-cd llm-learn/projects/first-llm-app
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-```
+## 当前进度
+- 已学过：Lesson 1–10（用户已完成基础学习；不重讲）。
+- 首批代码仓库整理：Lesson 11–16（Git/GitHub、HTTP、Responses API）。
+- **在线 API 实际调用需要本人的密钥和配额**，默认离线 CI 不产生费用。
 
-运行本地 HTTP 服务：`python api_server.py`，另一终端运行 `python http_client.py`。如需调用付费大模型 API，在当前终端设置 `OPENAI_API_KEY`，再运行 `python chatbot.py`。
+## 自动化构建
+- `course-code-ci.yml`：源码、注释、文档结构与离线单元测试。
+- `course-latex.yml`：XeLaTeX 中文讲义 PDF 编译、文本验证、SHA256、Artifacts、主分支发布。
 
-## 基本规范
-- 禁止提交 API Key、`.env`、个人对话、敏感数据。
-- 本地测试与在线模型调用的验证等级必须明确区分。
-- 每次课程更新配套讲义、源码、测试结果和变更记录。
-- GitHub Actions 仅执行离线测试，不触发付费 API 请求。
+以后每次上新课，请先完成可复现代码与双讲义，再上传测试记录，而不是只在聊天里讲解。
