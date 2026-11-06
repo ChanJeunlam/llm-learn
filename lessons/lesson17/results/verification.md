@@ -9,3 +9,10 @@
 - 模型在线调用：**未执行**，测试均使用本地假数据，无付费费用。
 - PDF：本课 LaTeX 文本可在本地验证；以提交后 GitHub Actions 运行和已发布 PDF 为最终仓库证据。
 - 说明：自动 repr 脱敏不是加密。不得把安全示例密钥理解为真实有效密钥。
+
+## GitHub Actions 最终验证（2026-11-06）
+
+- **代码 CI：通过**，https://github.com/ChanJeunlam/llm-learn/actions/runs/42157758015 。本次检查涵盖课程目录、代码注释、Python 语法及每课离线单元测试。
+- **中文 LaTeX / PDF：通过**，https://github.com/ChanJeunlam/llm-learn/actions/runs/42157758001 。XeLaTeX 编译、PDF 文件内容与页数检查、校验和、Artifact 上传、向 main 发布 PDF 均执行成功。
+- **已发布 PDF：** `lessons/lesson17/lecture.pdf`（GitHub 仓库主分支文件）。
+- **真实在线大模型调用：未执行**。不要把配置测试说成模型回答验证。
