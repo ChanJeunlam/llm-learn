@@ -1,0 +1,102 @@
+# 从交通工程论文的 XeLaTeX/latexmk 工作流演化为多课次教学讲义编译。
+name: Course Chinese XeLaTeX PDFs
+
+# 仅 TeX / PDF 验证程序 / 本工作流更改时触发，避免 PDF 自触发循环。
+on:
+  push:
+    paths:
+      - 'lessons/**/lecture.tex'
+      - 'tools/verify_course_pdf.py'
+      - '.github/workflows/course-latex.yml'
+  pull_request:
+    paths:
+      - 'lessons/**/lecture.tex'
+      - 'tools/verify_course_pdf.py'
+      - '.github/workflows/course-latex.yml'
+  workflow_dispatch:
+
+# 主分支发布 PDF 需要 contents:write；不使用密钥或付费服务。
+permissions:
+  contents: write
+
+# 防止多个 PDF 发布作业同时向 main 推送而产生冲突。
+concurrency:
+  group: course-latex-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-verify:
+    # GitHub ubuntu-24.04 稳定环境。
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      # 首先检出所有课程 .tex 和必要的源码。
+      - name: Checkout reproducible lecture sources
+        uses: actions/checkout@v4
+      # 安装与交通 V8 中文文档相同类型的 XeLaTeX 与 Noto CJK 字体。
+      - name: Install Chinese XeLaTeX and PDF tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            texlive-xetex texlive-lang-chinese texlive-latex-recommended \
+            texlive-latex-extra latexmk poppler-utils fonts-noto-cjk
+          fc-match 'Noto Serif CJK SC'
+          kpsewhich ctexart.cls
+      # 每课从自己的目录编译 PDF，不混用 LaTeX 中间文件。
+      - name: Compile six Chinese lectures
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in 11 12 13 14 15 16; do
+            folder="lessons/lesson${i}"
+            echo "::group::XeLaTeX lesson${i}"
+            (
+              cd "$folder"
+              mkdir -p build
+              latexmk -xelatex -interaction=nonstopmode -halt-on-error -file-line-error -outdir=build lecture.tex
+            )
+            # 校验真实 PDF 内容、页数、中文字数和编译日志。
+            python tools/verify_course_pdf.py "$folder/build/lecture.pdf" "$i"
+            # 只把最终 PDF 复制到课程目录；中间产物仍在被忽略的 build/。
+            cp "$folder/build/lecture.pdf" "$folder/lecture.pdf"
+            echo "::endgroup::"
+          done
+      # 将 PDF 的 SHA256 与大小写入 GitHub Actions 摘要，便于核对。
+      - name: Report checksums and PDF metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in 11 12 13 14 15 16; do
+            f="lessons/lesson${i}/lecture.pdf"
+            test -s "$f"
+            pdfinfo "$f" | grep -E '^Pages:|^Page size:'
+            sha256sum "$f"
+            sha256sum "$f" >> "$GITHUB_STEP_SUMMARY"
+          done
+      # 任何分支均保留 GitHub Actions Artifacts，便于不改仓库就下载 PDF。
+      - name: Upload compiled PDFs to GitHub Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-learn-lessons-11-16-pdfs
+          if-no-files-found: error
+          retention-days: 90
+          path: lessons/lesson*/lecture.pdf
+      # 仅在可信的 main 分支 push 时把稳定 PDF 发布回每个 lesson 文件夹。
+      - name: Publish verified PDF files back to main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f lessons/lesson*/lecture.pdf
+          if git diff --cached --quiet; then
+            echo "PDF files already match main" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git commit -m "docs: publish compiled course PDFs [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "Verified PDFs committed to main" >> "$GITHUB_STEP_SUMMARY"

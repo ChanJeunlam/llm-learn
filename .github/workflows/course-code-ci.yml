@@ -1,0 +1,64 @@
+# 每次改动课程源码与讲义时，进行不收费的 Python 测试与目录/注释审计。
+name: Course code quality and offline tests
+
+# 仅在有关课程或工作流文件变化时自动运行。
+on:
+  push:
+    paths:
+      - 'lessons/**'
+      - 'tools/**'
+      - 'COURSE_PLAN.md'
+      - 'COURSE_STANDARDS.md'
+      - 'requirements-dev.txt'
+      - '.github/workflows/course-code-ci.yml'
+  pull_request:
+    paths:
+      - 'lessons/**'
+      - 'tools/**'
+      - 'requirements-dev.txt'
+      - '.github/workflows/course-code-ci.yml'
+  workflow_dispatch:
+
+# 纯只读权限，防止测试执行时修改仓库。
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    # GitHub 托管 Ubuntu runner，避免需要自购服务器。
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      # 第一步：检出当前提交供检查。
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      # 第二步：配置课程统一使用的 Python 解释器。
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # 第三步：安装离线测试依赖，不配置任何 API Key。
+      - name: Install course dependencies
+        run: python -m pip install -r requirements-dev.txt
+      # 第四步：审计全部当前课次目录与中文注释规范。
+      - name: Audit course structure and code comments
+        run: python tools/check_course.py
+      # 第五步：检查所有已提交 Python 文件的语法错误。
+      - name: Compile Python syntax
+        run: python -m compileall -q lessons tools
+      # 第六步：每节课独立运行自己的 tests 目录。
+      - name: Run six lesson test suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in 11 12 13 14 15 16; do
+            echo "::group::lesson${i}"
+            python -m unittest discover -s "lessons/lesson${i}/tests" -v
+            echo "::endgroup::"
+          done
+      # 第七步：给 GitHub Actions 的页面留下明确验收摘要。
+      - name: Summarize offline checks
+        run: |
+          echo "## Lessons 11–16 offline code checks" >> "$GITHUB_STEP_SUMMARY"
+          echo "Python 3.12; course structure, docstrings, Chinese comment coverage and six test suites passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "No paid API calls were made." >> "$GITHUB_STEP_SUMMARY"
