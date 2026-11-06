@@ -41,9 +41,10 @@ jobs:
           sudo apt-get update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             texlive-xetex texlive-lang-chinese texlive-latex-recommended \
-            texlive-latex-extra latexmk poppler-utils fonts-noto-cjk
+            texlive-latex-extra texlive-fonts-recommended latexmk poppler-utils fonts-noto-cjk
           fc-match 'Noto Serif CJK SC'
           kpsewhich ctexart.cls
+          kpsewhich pzdr.tfm
       # 每课从自己的目录编译 PDF，不混用 LaTeX 中间文件。
       - name: Compile six Chinese lectures
         shell: bash
