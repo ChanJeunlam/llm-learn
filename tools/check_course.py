@@ -12,7 +12,11 @@ from pathlib import Path
 # 获取当前脚本所在仓库的根目录，避免依赖调用方工作目录。
 ROOT = Path(__file__).resolve().parents[1]
 # 本次实际已制作的课次，需要每课均具备完整材料。
-ACTIVE_LESSONS = tuple(range(11, 17))
+ACTIVE_LESSONS = tuple(
+    # 自动发现真实存在的 lessonN 目录，新增课程无需改动扫描器。
+    sorted(int(folder.name.removeprefix("lesson")) for folder in (ROOT / "lessons").glob("lesson[0-9]*")
+           if folder.is_dir() and folder.name.removeprefix("lesson").isdigit())
+)
 # 所有课程共有的必须存在的文件或目录。
 REQUIRED = ("README.md", "lecture.md", "lecture.tex",
             "code", "tests", "results/verification.md")
@@ -67,7 +71,7 @@ def audit_python_source(file_path: Path) -> list[str]:
 
 
 def audit_course() -> list[str]:
-    """检查六课目录、双格式讲义、代码、测试、验证记录和注释质量。"""
+    """检查当前所有课次目录、双格式讲义、代码、测试、验证记录和注释质量。"""
     # 初始化整个课程的错误列表。
     errors = []
     # 逐一核实已经制作的六节课，禁止只建空目录。
@@ -92,7 +96,7 @@ def audit_course() -> list[str]:
                 continue
             # 查找本课这个子目录中的全部 Python 源码。
             python_files = sorted(directory.rglob("*.py"))
-            # 没有 Python 文件的教学单元不符合目前 11–16 课的要求。
+            # 没有 Python 文件的教学单元不符合当前课程的要求。
             if not python_files:
                 # 报告缺少代码/测试文件的位置。
                 errors.append(f"缺少 Python 文件：{directory.relative_to(ROOT)}")

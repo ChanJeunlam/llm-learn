@@ -5,7 +5,7 @@
 ## 从这里开始
 - **[完整 72 课课程表（每课目标/实践/验收）](COURSE_PLAN.md)**
 - **[课程硬性规范：目录、双讲义、逐行注释、LaTeX、CI](COURSE_STANDARDS.md)**
-- **[课程目录](lessons/)**：`lesson11` 到 `lesson16` 已建立；此前 1–10 课已学习，未伪造历史实验与讲义。
+- **[课程目录](lessons/)**：`lesson11` 到 `lesson17` 已建立；此前 1–10 课已学习，未伪造历史实验与讲义。
 - **[GitHub Actions 运行历史](../../actions)**
 
 ## 每课文件
@@ -13,7 +13,7 @@
 
 ## 当前进度
 - 已学过：Lesson 1–10（用户已完成基础学习；不重讲）。
-- 首批代码仓库整理：Lesson 11–16（Git/GitHub、HTTP、Responses API）。
+- 首批代码仓库整理：Lesson 11–17（Git/GitHub、HTTP、Responses API、环境配置与密钥安全）。
 - **在线 API 实际调用需要本人的密钥和配额**，默认离线 CI 不产生费用。
 
 ## 自动化构建

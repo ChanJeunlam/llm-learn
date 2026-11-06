@@ -47,18 +47,19 @@ jobs:
       - name: Compile Python syntax
         run: python -m compileall -q lessons tools
       # 第六步：每节课独立运行自己的 tests 目录。
-      - name: Run six lesson test suites
+      - name: Run all current lesson test suites
         shell: bash
         run: |
           set -euo pipefail
-          for i in 11 12 13 14 15 16; do
-            echo "::group::lesson${i}"
-            python -m unittest discover -s "lessons/lesson${i}/tests" -v
+          for folder in lessons/lesson[0-9]*; do
+            test -d "$folder/tests"
+            echo "::group::$(basename "$folder")"
+            python -m unittest discover -s "$folder/tests" -v
             echo "::endgroup::"
           done
       # 第七步：给 GitHub Actions 的页面留下明确验收摘要。
       - name: Summarize offline checks
         run: |
-          echo "## Lessons 11–16 offline code checks" >> "$GITHUB_STEP_SUMMARY"
-          echo "Python 3.12; course structure, docstrings, Chinese comment coverage and six test suites passed." >> "$GITHUB_STEP_SUMMARY"
+          echo "## All available course lessons: offline code checks" >> "$GITHUB_STEP_SUMMARY"
+          echo "Python 3.12; course structure, docstrings, Chinese comment coverage and each lesson's test suite passed." >> "$GITHUB_STEP_SUMMARY"
           echo "No paid API calls were made." >> "$GITHUB_STEP_SUMMARY"

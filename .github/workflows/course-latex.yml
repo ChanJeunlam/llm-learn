@@ -46,12 +46,13 @@ jobs:
           kpsewhich ctexart.cls
           kpsewhich pzdr.tfm
       # 每课从自己的目录编译 PDF，不混用 LaTeX 中间文件。
-      - name: Compile six Chinese lectures
+      - name: Compile all available Chinese lectures
         shell: bash
         run: |
           set -euo pipefail
-          for i in 11 12 13 14 15 16; do
-            folder="lessons/lesson${i}"
+          for folder in lessons/lesson[0-9]*; do
+            i="${folder##*lesson}"
+            test -s "$folder/lecture.tex"
             echo "::group::XeLaTeX lesson${i}"
             (
               cd "$folder"
@@ -69,8 +70,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for i in 11 12 13 14 15 16; do
-            f="lessons/lesson${i}/lecture.pdf"
+          for folder in lessons/lesson[0-9]*; do
+            f="$folder/lecture.pdf"
             test -s "$f"
             pdfinfo "$f" | grep -E '^Pages:|^Page size:'
             sha256sum "$f"
@@ -80,7 +81,7 @@ jobs:
       - name: Upload compiled PDFs to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: llm-learn-lessons-11-16-pdfs
+          name: llm-learn-all-course-pdfs
           if-no-files-found: error
           retention-days: 90
           path: lessons/lesson*/lecture.pdf
